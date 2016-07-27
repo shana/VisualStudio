@@ -19,6 +19,8 @@ using NullGuard;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using GitHub.VisualStudio.UI;
+using System.Windows.Threading;
 
 namespace GitHub.VisualStudio.UI.Views
 {
@@ -46,14 +48,14 @@ namespace GitHub.VisualStudio.UI.Views
 
         [ImportingConstructor]
         public GitHubPaneViewModel(ISimpleApiClientFactory apiFactory, ITeamExplorerServiceHolder holder,
-            IConnectionManager cm, IRepositoryHosts hosts)
+            IConnectionManager cm, IRepositoryHosts hosts, INotificationDispatcher notifications)
             : base(apiFactory, holder)
         {
             this.connectionManager = cm;
             this.hosts = hosts;
             syncContext = SynchronizationContext.Current;
             CancelCommand = ReactiveCommand.Create();
-            Title = "GitHub";
+            Title = "GitHub"; 
         }
 
         public override void Initialize(IServiceProvider serviceProvider)
@@ -109,7 +111,7 @@ namespace GitHub.VisualStudio.UI.Views
                 return;
 
             Stop();
-            IsGitHubRepo = null;
+            RepositoryOrigin = RepositoryOrigin.Unknown;
             Reload().Forget();
         }
 
@@ -129,13 +131,13 @@ namespace GitHub.VisualStudio.UI.Views
 
             navigatingViaArrows = navigating;
 
-            if (!IsGitHubRepo.HasValue)
+            if (RepositoryOrigin == RepositoryOrigin.Unknown)
             {
-                var isGitHubRepo = await IsAGitHubRepo();
+                var origin = await GetRepositoryOrigin();
                 if (reloadCallId != latestReloadCallId)
                     return;
 
-                IsGitHubRepo = isGitHubRepo;
+                RepositoryOrigin = origin;
             }
 
             var connection = await connectionManager.LookupConnection(ActiveRepo);
@@ -153,16 +155,18 @@ namespace GitHub.VisualStudio.UI.Views
                 IsLoggedIn = isLoggedIn;
             }
 
-            if (!IsGitHubRepo.Value)
+            if (RepositoryOrigin == UI.RepositoryOrigin.NonGitRepository)
+            {
+                LoadView(UIViewType.NotAGitRepository);
+            }
+            else if (RepositoryOrigin == UI.RepositoryOrigin.Other)
             {
                 LoadView(UIViewType.NotAGitHubRepository);
             }
-
             else if (!IsLoggedIn)
             {
                 LoadView(UIViewType.LoggedOut);
             }
-
             else
             {
                 LoadView(data?.ActiveFlow ?? DefaultControllerFlow, connection, data);
@@ -337,13 +341,32 @@ namespace GitHub.VisualStudio.UI.Views
             set { isLoggedIn = value;  this.RaisePropertyChange(); }
         }
 
-        bool? isGitHubRepo;
-        public bool? IsGitHubRepo
+        RepositoryOrigin repositoryOrigin;
+        public RepositoryOrigin RepositoryOrigin
         {
-            get { return isGitHubRepo; }
-            set { isGitHubRepo = value; this.RaisePropertyChange(); }
+            get { return repositoryOrigin; }
+            private set { repositoryOrigin = value; }
         }
 
+        
+        string errorMessage;
+        [AllowNull]
+        public string ErrorMessage
+        {
+            [return:AllowNull] get { return errorMessage; }
+            private set { errorMessage = value; this.RaisePropertyChange(); }
+        }
+
+        public bool? IsGitHubRepo
+        {
+            get
+            {
+                return repositoryOrigin == RepositoryOrigin.Unknown ?
+                    (bool?)null :
+                    repositoryOrigin == UI.RepositoryOrigin.DotCom ||
+                    repositoryOrigin == UI.RepositoryOrigin.Enterprise;
+            }
+        }
 
         public ReactiveCommand<object> CancelCommand { get; private set; }
         public ICommand Cancel => CancelCommand;

@@ -4,11 +4,14 @@ using GitHub.Primitives;
 using GitHub.VisualStudio.Helpers;
 using NullGuard;
 using System.Diagnostics;
+using GitHub.SampleData;
 
 namespace GitHub.Models
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public sealed class PullRequestModel : NotificationAwareObject, IPullRequestModel
+    public sealed class PullRequestModel : NotificationAwareObject, IPullRequestModel,
+        IEquatable<PullRequestModel>,
+        IComparable<PullRequestModel>
     {
         public PullRequestModel(int number, string title,
             IAccount author, [AllowNull]IAccount assignee,
@@ -44,7 +47,7 @@ namespace GitHub.Models
 
         public override int GetHashCode()
         {
-            return Number;
+            return Number.GetHashCode();
         }
 
         bool IEquatable<IPullRequestModel>.Equals([AllowNull]IPullRequestModel other)
@@ -54,7 +57,19 @@ namespace GitHub.Models
             return other != null && Number == other.Number;
         }
 
+        bool IEquatable<PullRequestModel>.Equals([AllowNull]PullRequestModel other)
+        {
+            if (ReferenceEquals(this, other))
+                return true;
+            return other != null && Number == other.Number;
+        }
+
         public int CompareTo([AllowNull]IPullRequestModel other)
+        {
+            return other != null ? UpdatedAt.CompareTo(other.UpdatedAt) : 1;
+        }
+
+        public int CompareTo([AllowNull]PullRequestModel other)
         {
             return other != null ? UpdatedAt.CompareTo(other.UpdatedAt) : 1;
         }
@@ -75,7 +90,7 @@ namespace GitHub.Models
 
         public static bool operator ==([AllowNull]PullRequestModel lhs, [AllowNull]PullRequestModel rhs)
         {
-            return Equals(lhs, rhs) && ((object)lhs == null || lhs.CompareTo(rhs) == 0);
+            return ReferenceEquals(lhs, rhs);
         }
 
         public static bool operator !=([AllowNull]PullRequestModel lhs, [AllowNull]PullRequestModel rhs)
@@ -125,7 +140,6 @@ namespace GitHub.Models
             get { return assignee; }
             set { assignee = value; this.RaisePropertyChange(); }
         }
-
 
         [return: AllowNull] // nullguard thinks a string.Format can return null. sigh.
         public override string ToString()
