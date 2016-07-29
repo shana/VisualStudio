@@ -9,7 +9,7 @@
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
     <BuildType Condition="Exists('..\..\script\ApiClientConfiguration.cs')">Internal</BuildType>
-    <ApplicationVersion>1.0.99.7</ApplicationVersion>
+    <ApplicationVersion>1.0.99.8</ApplicationVersion>
     <OutputPath>..\..\build\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -274,6 +274,9 @@
       <DependentUpon>GitHubPaneView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Views\GitHubPaneViewModel.cs" />
+    <Compile Include="UI\Views\NotAGitRepositoryView.xaml.cs">
+      <DependentUpon>NotAGitRepositoryView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Views\NotAGitHubRepositoryView.xaml.cs">
       <DependentUpon>NotAGitHubRepositoryView.xaml</DependentUpon>
     </Compile>
@@ -471,6 +474,10 @@
     <Page Include="UI\Views\GitHubPaneView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Views\NotAGitRepositoryView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\NotAGitHubRepositoryView.xaml">
       <Generator>MSBuild:Compile</Generator>

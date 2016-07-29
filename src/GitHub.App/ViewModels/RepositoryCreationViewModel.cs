@@ -78,7 +78,11 @@ namespace GitHub.ViewModels
 
             browseForDirectoryCommand.Subscribe(_ => ShowBrowseForDirectoryDialog());
 
-            BaseRepositoryPathValidator = this.CreateBaseRepositoryPathValidator();
+            BaseRepositoryPathValidator = ReactivePropertyValidator.ForObservable(this.WhenAny(x => x.BaseRepositoryPath, x => x.Value))
+                .IfNullOrEmpty(Resources.RepositoryCreationClonePathEmpty)
+                .IfTrue(x => x.Length > 200, Resources.RepositoryCreationClonePathTooLong)
+                .IfContainsInvalidPathChars(Resources.RepositoryCreationClonePathInvalidCharacters)
+                .IfPathNotRooted(Resources.RepositoryCreationClonePathInvalid);
 
             var nonNullRepositoryName = this.WhenAny(
                 x => x.RepositoryName,
@@ -251,21 +255,9 @@ namespace GitHub.ViewModels
                 if (Path.GetInvalidPathChars().Any(chr => BaseRepositoryPath.Contains(chr)))
                     return false;
                 string potentialPath = Path.Combine(BaseRepositoryPath, safeRepositoryName);
-                isAlreadyRepoAtPath = IsGitRepo(potentialPath);
+                isAlreadyRepoAtPath = operatingSystem.Directory.Exists(potentialPath);
             }
             return isAlreadyRepoAtPath;
-        }
-
-        bool IsGitRepo(string path)
-        {
-            try
-            {
-                return operatingSystem.File.Exists(Path.Combine(path, ".git", "HEAD"));
-            }
-            catch (PathTooLongException)
-            {
-                return false;
-            }
         }
 
         IObservable<Unit> OnCreateRepository(object state)
