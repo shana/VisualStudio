@@ -1,6 +1,9 @@
+using System;
 using System.ComponentModel.Composition;
 using GitHub.Exports;
+using GitHub.Models;
 using GitHub.Services;
+using GitHub.UI;
 using ReactiveUI;
 
 namespace GitHub.ViewModels
@@ -12,21 +15,30 @@ namespace GitHub.ViewModels
     [PartCreationPolicy(CreationPolicy.NonShared)]
     public class NotAGitHubRepositoryViewModel : BaseViewModel, INotAGitHubRepositoryViewModel
     {
-        IUIProvider uiProvider;
+        ITeamExplorerServices teamExplorerServices;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotAGitHubRepositoryViewModel"/> class.
         /// </summary>
         [ImportingConstructor]
-        public NotAGitHubRepositoryViewModel(IUIProvider uiProvider)
+        public NotAGitHubRepositoryViewModel(ITeamExplorerServices teamExplorerServices)
         {
-            this.uiProvider = uiProvider;
+            this.teamExplorerServices = teamExplorerServices;
             Publish = ReactiveCommand.Create();
+            Publish.Subscribe(_ => OnPublish());
         }
 
         /// <summary>
         /// Gets the command executed when the user clicks the "Publish to GitHub" link.
         /// </summary>
         public IReactiveCommand<object> Publish { get; }
+
+        /// <summary>
+        /// Called when the <see cref="Publish"/> command is executed.
+        /// </summary>
+        private void OnPublish()
+        {
+            teamExplorerServices.ShowPublishSection();
+        }
     }
 }

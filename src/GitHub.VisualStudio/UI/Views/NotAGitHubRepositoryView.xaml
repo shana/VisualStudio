@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:GitHub.VisualStudio.UI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="clr-namespace:GitHub.UI;assembly=GitHub.UI"
+    xmlns:prop="clr-namespace:GitHub.VisualStudio.UI;assembly=GitHub.VisualStudio.UI"
     DataContext="{Binding ViewModel}"
     d:DesignHeight="300"
     d:DesignWidth="300"
@@ -32,24 +33,18 @@
             Foreground="{DynamicResource GitHubVsWindowText}"
             HorizontalAlignment="Center"
             FontSize="16"
-            Content="This repository is not on GitHub" />
+            Content="{x:Static prop:Resources.NotAGitHubRepository}" />
         <TextBlock
             TextWrapping="Wrap"
             TextAlignment="Center"
             HorizontalAlignment="Center"
-            Text="Publish this repository to GitHub and get powerful collaboration, code review, and code management for open source and private projects." />
-        <StackPanel
-            Margin="0,5"
-            HorizontalAlignment="Center"
-            Orientation="Vertical">
-
-            <CheckBox Foreground="{DynamicResource GitHubVsToolWindowText}" Margin="10">Publish as a private repository</CheckBox>
-
-                <Button HorizontalAlignment="Center" Style="{DynamicResource GitHubVsPrimaryActionButton}">
-                    Publish to GitHub
-            </Button>
-
-        </StackPanel>
+            Text="{x:Static prop:Resources.NotAGitHubRepositoryMessage}" />
+        <Button HorizontalAlignment="Center"
+                Margin="0,15"
+                Style="{DynamicResource GitHubVsPrimaryActionButton}"
+                Command="{Binding Publish}">
+            Get Started
+        </Button>
     </StackPanel>
   </DockPanel>
 </local:GenericNotAGitHubRepositoryView>
