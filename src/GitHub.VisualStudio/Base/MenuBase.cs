@@ -57,7 +57,6 @@ namespace GitHub.VisualStudio
         protected ISimpleRepositoryModel GetActiveRepo()
         {
             var activeRepo = ServiceProvider.GetExportedValue<ITeamExplorerServiceHolder>()?.ActiveRepo;
-            // activeRepo can be null at this point because it is set elsewhere as the result of async operation that may not have completed yet.
             if (activeRepo == null)
             {
                 var path = ServiceProvider.GetExportedValue<IVSServices>()?.GetActiveRepoPath() ?? String.Empty;
