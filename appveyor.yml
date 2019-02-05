@@ -68,8 +68,8 @@ for:
 -
   branches:
     only:
-      - /master
-      - /testing
+      - master
+      - testing
   environment:
     matrix:
       - BUILD_TYPE: package
